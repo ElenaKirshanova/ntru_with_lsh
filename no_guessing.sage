@@ -70,7 +70,7 @@ def Rep0(params):
 		k = k-1
 
 	# search for optimal B for NN search
-	for B in range(3, 50):
+	for B in range(2, 20):
 
 		#nReps = round((1 - 1/B)^(-k/2)) # (1 - 1/3)^(-k/2)
 		nReps = ((B/(B-1))**k)*n
@@ -79,6 +79,7 @@ def Rep0(params):
 
 		#expected output in one run
 		Bucket_size = L2 *(1/q)^(k/2)*(B/q)^(k/2)
+		#Bucket_size = L2 *(B/q)^(k)
 		T1 = q^(k/2) * (ceil(q/B))^(k/2)*Bucket_size**2 #number of labels X naive search inside each bucket
 
 		L1 = L2^2 * 3^(k/2) / q^k
@@ -89,8 +90,8 @@ def Rep0(params):
 		runtime = max(runtime_list)
 		lvl = runtime_list.index(runtime)
 
-		if runtime<min_runtime:
-			min_runtime = runtime
+		if runtime*3**(k/2)<min_runtime:
+			min_runtime = runtime*3**(k/2)
 			min_L = [log(L2,2).n(), log(L1,2).n(), log(L0,2).n()]
 			min_T = [log(T2,2).n(), log(T1*nReps,2).n(), log(T0,2).n()]
 			min_nReps = nReps
@@ -109,12 +110,12 @@ def Rep0(params):
 
 
 	return Cost
-"""
-print("--------- Rep-0 ---------")
-for param in all_NTRU_ieee:
-	runtime = Rep0(param)
-	print('[n =', param['n'], ' q = ', param['q'], 'w = ', param['w'], ' | ', runtime)
-"""
+#"""
+# print("--------- Rep-0 ---------")
+# for param in all_param_sets+all_NTRU_ieee:
+# 	runtime = Rep0(param)
+# 	print('[n =', param['n'], ' q = ', param['q'], 'w = ', param['w'], ' | ', runtime)
+#"""
 
 
 # ------REP1 (same depth as Rep0)------
@@ -162,8 +163,8 @@ def Rep1_depth3(params, eps):
 		runtime = max(runtime_list)
 		lvl = runtime_list.index(runtime)
 
-		if runtime<min_runtime:
-			min_runtime = runtime
+		if runtime*3**(k/2)<min_runtime:
+			min_runtime = runtime*3**(k/2)
 			min_L = [log(L0,2).n(), log(L1,2).n(), log(L2,2).n()]
 			min_T = [log(nReps*T0,2).n(), log(T1*nReps,2).n(), log(T2,2).n()]
 			min_bucketsize = log(Bucket_size,2).n()
@@ -171,6 +172,7 @@ def Rep1_depth3(params, eps):
 			min_k = k
 			min_lvl = lvl
 			min_B = B
+			#print(L2, log(L2,2).n())
 
 
 	Cost = {}
@@ -183,6 +185,7 @@ def Rep1_depth3(params, eps):
 	Cost["B"] = min_B
 
 	return Cost
+
 
 
 
@@ -201,6 +204,12 @@ def R1_depth3_eps(param):
 	return min_cost, min_eps
 
 
+#"""
+# print("--------- R1_depth3_eps-1 ---------")
+# for param in all_param_sets+all_NTRU_ieee:
+# 	runtime = R1_depth3_eps(param)
+# 	print('[n =', param['n'], ' q = ', param['q'], 'w = ', param['w'], ' | ', runtime)
+#"""
 
 def R1(params, eps):
 	n = params['n']
@@ -307,8 +316,8 @@ def R1(params, eps):
 
 		runtime = max(T)
 		lvl = T.index(runtime)
-		if runtime<min_runtime:
-			min_runtime = runtime
+		if runtime*3**(k[0]/2)<min_runtime:
+			min_runtime = runtime*3**(k[0]/2)
 			min_runtime_list = copy(T)
 			min_list = copy(L)
 			min_bucketsize = copy(Bucket_size)
@@ -333,7 +342,7 @@ def R1(params, eps):
 	return Cost
 
 def R1_depth4_eps(param):
-	eps1_range = [i for i in range(6)]
+	eps1_range = [i for i in range(11)]
 	eps1_range.reverse()
 	min_runtime = {}
 	min_runtime["runtime"] = float("infinity")
@@ -350,12 +359,12 @@ def R1_depth4_eps(param):
 				eps = [i,j]
 	return min_runtime, eps
 
-"""
-print("--------- Rep-1, depth 4 ---------")
-for param in all_param_sets:
-	runtime, eps = R1_depth4_eps(param)
-	print('[n =', param['n'], ' q = ', param['q'], 'w = ', param['w'], ' | ', runtime, eps)
-"""
+#"""
+# print("--------- Rep-1, depth 4 ---------")
+# for param in all_param_sets+all_NTRU_ieee:
+# 	runtime, eps = R1_depth4_eps(param)
+# 	print('[n =', param['n'], ' q = ', param['q'], 'w = ', param['w'], ' | ', runtime, eps)
+#"""
 """
 print("--------- Rep-1, depth 4 ---------")
 for param in all_NTRU_ieee:
@@ -384,15 +393,15 @@ for param in all_param_sets:
 """
 
 def R1_depth5_eps(param):
-	eps1_range = [i for i in range(25,40)]
+	eps1_range = [i for i in range(15,45)]
 	eps1_range.reverse()
 	min_runtime = {}
 	min_runtime["runtime"] = float("infinity")
 	for i in eps1_range:
-		eps2_range = [j for j in range(20)]
+		eps2_range = [j for j in range(22)]
 		eps2_range.reverse()
 		for j in eps2_range:
-			eps3_range = [k for k in range(9)]
+			eps3_range = [k for k in range(12)]
 			eps3_range.reverse()
 			for k in eps3_range:
 				cost = R1(param, [i,j,k])
@@ -402,12 +411,12 @@ def R1_depth5_eps(param):
 					eps = [i,j,k]
 	return min_runtime, eps
 
-"""
+#"""
 print("--------- Rep-1, depth 5 ---------")
-for param in all_NTRU_ieee:
+for param in all_param_sets:
 	runtime, eps = R1_depth5_eps(param)
 	print('[n =', param['n'], ' q = ', param['q'], 'w = ', param['w'], ' | ', runtime, eps)
-"""
+#"""
 
 def cold_boot(param, alg = R1_depth3_eps):
 	n = param['n']
@@ -442,11 +451,11 @@ def cold_boot_guessing(param, alg=R1_depth3_eps):
 	return min_overall
 
 
-
+"""
 for param in all_param_sets:
 	print('[n =', param['n'], ' q = ', param['q'], 'w = ', param['w'], ' | ', cold_boot(param, alg=R1_depth4_eps))
 	print('[n =', param['n'], ' q = ', param['q'], 'w = ', param['w'], ' | ', cold_boot_guessing(param, alg=R1_depth4_eps))
-
+"""
 def R1_depth6_eps(param):
 	eps1_range = [i for i in range(40,45)]
 	eps1_range.reverse()
